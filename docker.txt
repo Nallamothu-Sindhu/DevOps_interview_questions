@@ -1,0 +1,27 @@
+1. What is Docker?
+
+Docker is an open-source containerization platform that allows you to package an application along with its dependencies (libraries, config, runtime) into a lightweight, portable container. These containers can run consistently across different environments (developer laptop, test, production, cloud).
+
+2. Why are you using Docker?
+
+I use Docker mainly because:
+
+Consistency: It eliminates the “works on my machine” problem. The same container runs everywhere.
+
+Lightweight: Containers share the host OS kernel, so they are faster and use fewer resources compared to virtual machines.
+
+Faster deployment: Applications start in seconds because containers are pre-packaged.
+
+Scalability: Works very well with orchestration tools like Kubernetes for scaling microservices.
+
+Isolation: Each container runs independently, so multiple applications/services can coexist without conflicts.
+
+Portability: I can easily move applications between environments (dev → test → prod, or on-prem → cloud).
+
+👉 Example (how I’d put it in an interview):
+"Docker is a containerization tool that helps me package applications with dependencies into portable containers. I use it because it ensures consistency across environments, makes deployments faster, reduces resource usage compared to VMs, and integrates well with CI/CD and Kubernetes for scaling."
+
+3. how containers are different from virtual machines?
+"In simple terms, a VM virtualizes the hardware, while a container virtualizes the operating system.
+VMs are like running multiple computers on one server, each with its own OS. Containers are like running multiple apps on the same OS, but fully isolated.
+That’s why containers are lightweight, faster to start, and easier to scale compared to VMs. However, VMs are still useful when we need strong isolation or to run different OS types on the same machine."r
