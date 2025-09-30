@@ -94,3 +94,117 @@ and network capacity. For example, if the containers are lightweight, you might 
 but if they are heavy (like full databases), you may only run a few. Scaling beyond a single host is usually managed 
 with orchestration tools like Kubernetes or Docker Swarm, which distribute containers across multiple nodes. 
 So the real limit is not Docker itself, but the available resources and the orchestration strategy you use."
+
+8.You're managing a Docker environment and need to ensure that each container operates within defined CPU and memory limits. 
+How do you limit the CPU and memory usage of a Docker container?
+
+Docker allows you to limit the CPU and memory usage of a container using resource constraints. 
+You can set the CPU limit with the --cpu option and the memory limit with the --memory option 
+when running the container using the docker run command.
+For example, 
+->  docker run --cpu 2 --memory 1g nginx 
+limits the container to use a maximum of 2 CPU cores and 1GB of memory.
+
+9. What is Dockerfile and how is it used in Docker?
+
+A Dockerfile is a simple text file that contains a set of instructions to build a Docker image. 
+Instead of manually creating images, you write a Dockerfile to define how the image should be built, 
+including the base image, dependencies, configuration files, and commands. 
+Docker then uses this Dockerfile to create an immutable and portable image that can be run as a container anywhere.
+
+ Key Points
+FROM → base image
+COPY / ADD → copy files into the image
+RUN → run commands during build
+CMD / ENTRYPOINT → default command when container starts
+EXPOSE → open ports
+WORKDIR → set working directory
+
+10. Difference Between CMD and ENTRYPOINT in Dockerfile
+
+"CMD and ENTRYPOINT are instructions in a Dockerfile that define commands to run when a container starts. 
+CMD sets the default command, which can be overridden by passing a different command at runtime.
+ENTRYPOINT sets the main command, and any arguments provided at runtime are appended to it. 
+Best practice is to use ENTRYPOINT as the executable and CMD for default arguments."
+
+CMD ["echo", "Hello CMD"]
+
+docker run myimage          # Output: Hello CMD
+docker run myimage echo Hi  # Output: Hi
+
+ENTRYPOINT ["echo", "Hello"]
+
+docker run myimage          # Output: Hello
+docker run myimage World    # Output: Hello World
+
+11.You've been tasked with ensuring the application can handle increased loads by scaling 
+Docker containers horizontally.How do you scale Docker containers horizontally?
+
+To scale Docker containers horizontally, you can use Docker Swarm or a container orchestration tool 
+like Kubernetes. Which lets you create and manage multiple docker containers defining the number of 
+replicas in declarative way. (Manifests)
+
+12.What is the difference between a Docker container and a Kubernetes pod?
+
+"A Docker container is a single, isolated application running with its dependencies, using the host OS kernel.
+ It packages the app and its environment into a lightweight, portable unit. A Kubernetes pod, 
+ on the other hand, is the smallest deployable unit in Kubernetes and can contain one or more containers 
+ that share the same network namespace, storage volumes, and configuration. 
+ Pods provide an abstraction over containers, allowing Kubernetes to manage scaling, networking,
+ and lifecycle, whereas Docker containers are managed individually unless orchestrated. Essentially, 
+ a pod is a wrapper around containers that enables orchestration features like scaling, service discovery,
+ and self-healing."
+
+ 13.You're part of a development team deploying a microservices architecture using Docker containers. 
+ One of the containers, critical to the system's functionality, has suddenly started failing without 
+ clear error messages.How do you debug issues in a failing Docker container?
+
+ 13. You're part of a development team deploying a microservices architecture using Docker containers.
+One of the containers, critical to the system's functionality, has suddenly started failing without clear error 
+messages.How do you debug issues in a failing Docker container?
+
+"When a Docker container starts failing without clear errors, I follow a systematic debugging approach:"
+Check container status and logs
+docker ps -a                 # Check container status
+docker logs <container-id>   # View logs for errors
+
+Inspect container details
+docker inspect <container-id>
+Checks configuration, environment variables, volume mounts, network settings, and resource limits.
+
+Access the container interactively
+docker exec -it <container-id> /bin/bash
+
+
+Allows manual inspection of the filesystem, processes, and running services.
+
+Verify dependencies
+Check if linked containers, databases, or services are running.
+Check volume mounts or config files for missing or incorrect data.
+Resource constraints
+
+Ensure CPU/memory limits are not causing OOM kills or throttling:
+
+docker stats
+Reproduce issues in isolation
+
+Run the container manually with minimal setup to isolate the failing component:
+
+docker run -it myimage /bin/bash
+
+14. Can you describe a situation where you optimized a Dockerfile for faster build times or smaller image size?
+
+"In one project, our Docker image builds were slow and the image size was large 
+because we copied unnecessary files and installed all dependencies. To optimize, I:"
+Used a smaller base image (python:3.9-slim) to reduce size.
+Implemented multi-stage builds to separate build dependencies from runtime, keeping the final image lean.
+Combined RUN commands and cleaned up caches to reduce layers.
+Used .dockerignore to avoid copying unnecessary files.
+Managed services with Docker Compose to efficiently build and run multi-container setups, speeding up development.
+"These changes reduced the image size from 1.2 GB to 350 MB and cut build time from 15 minutes to under 5,
+ improving our CI/CD pipeline and deployment speed."
+Key interview highlights:
+Multi-stage builds → smaller runtime image.
+Docker Compose → efficient multi-container builds and orchestration.
+Combine RUN commands + slim base images → faster builds.
+.dockerignore → avoids copying unnecessary files.
