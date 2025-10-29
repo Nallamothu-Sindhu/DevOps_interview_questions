@@ -1,0 +1,315 @@
+-> You are managing a complex infrastructure with multiple components, and you need to ensure that Terraform deploys 
+all resources in the correct order?
+
+In Terraform, the depends_on argument is used to explicitly define a dependency between resources.
+It ensures that one resource is created or destroyed only after another specific resource has been created or destroyed —
+ even if there’s no direct reference between them.
+
+Example:
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+}
+
+resource "aws_subnet" "main" {
+  vpc_id     = aws_vpc.main.id
+  cidr_block = "10.0.1.0/24"
+}
+
+resource "aws_instance" "app" {
+  ami           = var.ami_id
+  instance_type = "t2.micro"
+  subnet_id     = aws_subnet.main.id
+  depends_on    = [aws_vpc.main]
+}
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--> You want to create an instance (AWS EC2 / Azure VM) using Terraform and then execute a shell script on the instance after 
+it has been created. How can you achieve this?
+
+“We can achieve this using the provisioner block in Terraform.
+The remote-exec provisioner allows us to run shell commands or scripts on the instance after it’s created, and the file provisioner 
+is used to upload files to the VM before running them.”
+
+file – to upload a file from local to the instance.
+remote-exec – to run commands or shell scripts inside the remote instance.
+local-exec – to run commands locally on the machine where Terraform is executed (like triggering Ansible or scripts).
+
+  provisioner "file" {
+    source      = "setup.sh"
+    destination = "/tmp/setup.sh"
+  }
+
+  # Run commands on VM
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/setup.sh",
+      "sudo /tmp/setup.sh"
+    ]
+  }
+
+  # Run command locally (on Terraform host)
+  provisioner "local-exec" {
+    command = "echo VM deployed successfully > deploy.log"
+  }
+
+  connection {
+    type        = "ssh"
+    user        = "ec2-user"
+    private_key = file("~/.ssh/id_rsa")
+    host        = self.public_ip
+  }
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--> You have an existing infrastructure on AWS/azure, and you need to use Terraform to manage it. How would you import these 
+resources into your Terraform configuration?
+
+“We can use the terraform import command to bring existing resources into Terraform state so Terraform can start managing them.
+First, we define the same resource block in our Terraform code, then use the import command to link that existing AWS resource 
+to Terraform’s state file.”
+
+Example (AWS):
+resource "aws_instance" "web" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = "t2.micro"
+}
+
+
+Then import the existing EC2 instance using its resource ID:
+
+terraform import aws_instance.web i-0abcd1234ef567890
+
+
+Terraform then maps that real AWS instance to your Terraform configuration.
+
+Example (Azure):
+resource "azurerm_resource_group" "rg" {
+  name     = "my-rg"
+  location = "East US"
+}
+
+
+Then import it using:
+
+terraform import azurerm_resource_group.rg /subscriptions/xxxx/resourceGroups/my-rg
+--------------------------------------------------------------------------------------------------------------------------------------------------
+-->  You are working with multiple environments (e.g., dev, prod) and want to avoid duplicating code. 
+How would you structure your Terraform configurations to achieve code reuse?
+
+“To avoid duplicating code across environments, I use Terraform modules.
+I’ll create a common reusable module for resources like VMs, networks, or storage, and then call that module separately 
+for each environment — dev, test, or prod — by passing different variables.
+This helps in maintaining consistency and makes code easy to manage.”
+module "compute" {
+  source     = "../../modules/compute"
+  vm_name    = "dev-vm"
+  vm_size    = "Standard_B1s"
+  environment = "dev"
+}
+---------------------------------------------------------------------------------------------------------------------------------------------------
+-->  Describe a situation where you might need to use the terraform remote backend, and what advantages does it offer in state management?
+
+We use a remote backend when multiple team members are managing the same Terraform project.
+It stores the Terraform state file in a remote location like AWS S3 or Azure Storage Account instead of locally.
+This helps in team collaboration, state locking, version control, and also prevents accidental deletion or corruption of the local state file.”
+
+-------------------------------------------------------------------------------------------------------------------------------------------------
+--> Your team is adopting a multi-cloud strategy, and you need to manage resources on both AWS and Azure using Terraform. 
+How would you structure your Terraform code to handle this?
+
+For a multi-cloud setup, I use separate provider blocks for AWS and Azure, and organize my Terraform code using modules and environment folders.
+Each cloud will have its own module (like AWS-network, Azure-network, etc.), and then I call them from a common root module or environment-specific folder.
+This way, we can manage both clouds with the same Terraform workflow but keep their configurations isolated.”
+Why this structure?
+Isolation: Keeps AWS and Azure code separate and easy to maintain.
+Reusability: Modules can be reused across environments.
+Scalability: Easy to add new clouds later.
+Separation of state: Each provider can have its own backend (e.g., S3 for AWS, Azure Storage for Azure).
+--------------------------------------------------------------------------------------------------------------------------------------------------
+-->  You want to run specific scripts after provisioning resources with Terraform. How would you achieve this, and what provisioners might you use?
+
+In Terraform, we use provisioners to run actions or scripts after a resource is created.
+The main provisioners are file, remote-exec, and local-exec.
+file is used to upload files or scripts to a remote instance.
+remote-exec runs commands or shell scripts on the remote instance.
+local-exec runs commands on the local machine where Terraform is executed — for example, triggering a CI/CD script or Ansible playbook.”
+ provisioner "file" {
+    source      = "install_nginx.sh"
+    destination = "/tmp/install_nginx.sh"
+  }
+
+  # Execute script on the instance
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/install_nginx.sh",
+      "sudo /tmp/install_nginx.sh"
+    ]
+  }
+
+  # Execute command locally after provisioning
+  provisioner "local-exec" {
+    command = "echo 'Instance created successfully' >> output.log"
+  }
+
+  connection {
+    type        = "ssh"
+    user        = "ec2-user"
+    private_key = file("~/.ssh/id_rsa")
+    host        = self.public_ip
+  }
+-------------------------------------------------------------------------------------------------------------------------------------------------
+--> You are dealing with sensitive information, such as API keys, in your Terraform configuration. What approach would you take to manage these securely?
+
+In Terraform, I never hardcode sensitive values like API keys or passwords in the configuration files.
+I store them securely in secret management services such as AWS Secrets Manager or Azure Key Vault, and then fetch them dynamically during Terraform execution.
+This prevents secrets from being exposed in code or state files.”
+
+Other Best Practices to Mention:
+Use Terraform variables with sensitive = true to hide output values.
+Store variables in .tfvars or environment variables, not in main.tf.
+Use remote backends (S3/Azure Storage) with encryption enabled.
+Never commit secrets to version control (use .gitignore).
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+--> Describe a scenario where you might need to use Terraform workspaces, and how would you structure your project to take advantage of them?
+
+“We use Terraform workspaces when we want to manage multiple environments (like dev, test, and prod) using the same codebase, but with separate state files.
+Each workspace maintains its own isolated state, so changes in one environment don’t affect others.”
+
+Advantages:
+No need to duplicate code for multiple environments.
+Each environment has an isolated state file.
+Easy to switch between environments with one command.
+Perfect for smaller teams or simple multi-env setups.
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+--> You've made changes to your Terraform configuration, and now you want to preview the execution plan before applying the changes. How would you do this?
+
+“In Terraform, before applying any changes, I use the terraform plan command to preview what actions Terraform will take — like what resources will be created, updated, or destroyed.
+It helps to verify the configuration and avoid unexpected changes before applying.”
+
+Example Command:
+terraform plan
+To save the plan to a file (for approval or CI/CD):
+terraform plan -out=tfplan
+
+To apply that saved plan later:
+terraform apply tfplan
+Why We Use It:
+To preview infrastructure changes safely.
+To validate before applying in production.
+To share the plan file in team approvals or pipelines.
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+--> Your team has decided to adopt GitOps practices for managing infrastructure with Terraform. How would you integrate Terraform 
+with version control systems like Git?
+
+“In a GitOps setup, we integrate Terraform with Git by storing all Terraform configuration files (.tf) in a Git repository.
+Any change to the infrastructure goes through pull requests, which are reviewed and approved before being merged.
+Once merged, a CI/CD pipeline (like GitHub Actions, Azure DevOps, or Jenkins) automatically runs terraform init, terraform plan, and terraform apply to deploy the infrastructure.”
+
+Example Workflow:
+
+Developer creates a feature branch and updates Terraform code.
+
+Runs locally:
+
+terraform fmt
+terraform validate
+terraform plan
+
+
+Opens a Pull Request (PR) for review.
+
+When PR is merged to main, a pipeline triggers automatically:
+
+terraform init
+terraform plan -out=tfplan
+terraform apply -auto-approve tfplan
+--------------------------------------------------------------------------------------------------------------------------------------------------
+--> Terraform vault?
+
+Terraform Vault refers to HashiCorp Vault, a secret management tool developed by the same company that made Terraform.
+It helps to store, generate, and manage secrets dynamically and securely, like database passwords, API tokens, or cloud credentials.
+Terraform integrates with Vault through the Vault provider, allowing Terraform to fetch or generate secrets at 
+runtime instead of hardcoding them.
+When Do We Use Vault?
+
+You use Vault when:
+You need to manage secrets across multiple clouds (AWS, Azure, GCP).
+You want dynamic secrets (temporary credentials that expire automatically).
+You need centralized, fine-grained access control for secrets.
+Your organization prefers an on-prem or hybrid security model, not tied to one cloud.
+
+| Feature             | **HashiCorp Vault**                                      | **AWS Secrets Manager**        | **Azure Key Vault**   |
+| ------------------- | -------------------------------------------------------- | ------------------------------ | --------------------- |
+| **Scope**           | Multi-cloud & On-prem                                    | AWS only                       | Azure only            |
+| **Secret Types**    | Static & Dynamic (temporary creds)                       | Static                         | Static                |
+| **Integration**     | Works with Terraform, Ansible, Jenkins, Kubernetes, etc. | AWS-specific                   | Azure-specific        |
+| **Access Control**  | Detailed, policy-based ACL                               | IAM roles/policies             | RBAC                  |
+| **Secret Rotation** | Automatic, customizable                                  | Automatic for limited services | Manual or event-based |
+| **Dynamic Secrets** | ✅ Yes (DB creds, AWS tokens, etc.)                       | ❌ No                           | ❌ No                  |
+
+provider "vault" {
+  address = "https://vault.company.com"
+  token   = var.vault_token
+}
+
+# Reading secret from Vault
+data "vault_generic_secret" "db_creds" {
+  path = "secret/data/db"
+}
+
+resource "aws_db_instance" "example" {
+  engine     = "mysql"
+  username   = data.vault_generic_secret.db_creds.data["username"]
+  password   = data.vault_generic_secret.db_creds.data["password"]
+}
+------------------------------------------------------------------------------------------------------------------------------------------------------
+--> Your team wants to ensure that the infrastructure is consistently provisioned across multiple environments. 
+How would you implement a consistent environment configuration?
+
+workspace, modules, variables
+---------------------------------------------------------------------------------------------------------------------------------------------------
+--> You are tasked with migrating your existing infrastructure from Terraform v0.11 to v0.12. What considerations and steps would you take?
+
+“When upgrading from Terraform v0.11 to v0.12, I first review the Terraform upgrade guides because v0.12 introduced major 
+syntax and language improvements, like first-class expressions, for loops, and better type handling.
+I take a backup of the state file, update Terraform to v0.12, and then use the terraform 0.12upgrade command to automatically 
+rewrite and validate the configurations.”
+
+Step-by-Step Migration Process:
+
+Backup Everything
+Take backups of all .tf files and the current terraform.tfstate file.
+Example:
+cp terraform.tfstate terraform.tfstate.backup
+Install Terraform v0.12
+Update Terraform to version 0.12 on your system or CI/CD pipeline.
+Run the Upgrade Tool
+Terraform provides a built-in helper:
+terraform 0.12upgrade
+This command scans all .tf files and updates deprecated syntax (like interpolation, variable usage, etc.).
+
+Validate the Configuration
+terraform validate
+Run Plan and Compare
+terraform plan
+terraform apply
+-----------------------------------------------------------------------------------------------------------------------------------------------------
+--> Explain a situation where you might need to use terraform taint and what effect it has on resources?
+
+“We use terraform taint when a resource becomes corrupted or manually changed outside of Terraform — like when someone changes 
+settings in the Azure portal or AWS console.By using terraform taint, we can mark that specific resource for recreation without 
+affecting other resources.
+For example, if someone manually changed the Azure VM size in the portal, I’ll run:
+
+terraform taint azurerm_virtual_machine.appvm
+terraform apply
+
+After tainting, Terraform destroys and recreates only that resource based on the configuration in the code.
+This helps to:
+Prevent configuration drift between Terraform and the actual cloud setup.
+Avoid manual fixes or deleting everything.
+Keep the infrastructure consistent with the Terraform state file.
+In short, terraform taint is used to repair or replace a broken resource safely without impacting the rest of the environment.”
+---------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
