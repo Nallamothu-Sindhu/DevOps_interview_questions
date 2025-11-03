@@ -1,0 +1,18 @@
+1. How do you handle Kubernetes cluster security?
+
+To secure a Kubernetes cluster, I follow these key practices:
+Network Policies
+By default, all pods can talk to each other.
+I enable Network Policies to restrict communication and only allow required traffic between pods and namespaces.
+RBAC (Role-Based Access Control)
+I apply the least-privilege principle.
+Users, service accounts, and applications get only the permissions they need — no one gets cluster-admin unless required.
+Namespaces for Isolation
+I use namespaces to separate environments and applications — for example, dev, UAT, prod.
+This helps in multi-tenancy, resource control, and security isolation.
+Admission Controllers / Pod Security Standards
+I enforce Pod Security Policies/Standards like restricted mode.
+This blocks privileged containers, root users, and enforces secure defaults during deployment.
+Audit Logging
+I enable audit logs to monitor cluster activity and detect suspicious actions.
+Logs are forwarded to a central monitoring tool for alerts and investigation.
