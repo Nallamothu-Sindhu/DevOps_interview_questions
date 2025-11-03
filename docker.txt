@@ -257,3 +257,30 @@ Recreate Docker network if corrupted:
 
 docker network rm bridge
 docker network create bridge
+
+17. What are the risks of running containers as root?
+
+Running containers as root is risky because if the container is compromised, the attacker may gain root access to the host system. It increases the chances of privilege-escalation, unauthorized file access, and security breaches. Root containers can also modify host files or Docker daemon resources.
+So we should always run containers with least-privilege users.
+
+18. How to ensure service readiness in Docker Compose?
+
+We ensure service readiness by using healthchecks and depends_on with health condition. A healthcheck verifies if a service is actually ready (not just running). Other services wait until the dependent service is marked healthy before starting.
+
+version: '3.9'
+services:
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      retries: 5
+
+  app:
+    image: myapp
+    depends_on:
+      db:
+        condition: service_healthy
+
