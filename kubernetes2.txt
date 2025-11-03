@@ -16,3 +16,44 @@ This blocks privileged containers, root users, and enforces secure defaults duri
 Audit Logging
 I enable audit logs to monitor cluster activity and detect suspicious actions.
 Logs are forwarded to a central monitoring tool for alerts and investigation.
+
+2. How 2 containers running in a single Pod have a single IP address?
+
+Pods share network in Kubernetes
+In Kubernetes, containers inside the same Pod share the same network space.
+Single IP per Pod
+Kubernetes assigns one IP to the Pod, not to each container.
+Shared Network Namespace
+Containers inside the Pod share the same network namespace, so they use the same IP, same network interface.
+Communication via Localhost
+Because of shared network, containers talk to each other using localhost (127.0.0.1) and their container ports.
+Simple Example
+Pod IP = 10.10.5.20
+Container A IP = 10.10.5.20
+Container B IP = 10.10.5.20
+hey talk like:
+http://localhost:<port>
+                                          [or]
+Kubernetes uses a pause container to manage networking for a Pod.
+Kubernetes creates a special container called the Pause container for every Pod.
+This pause container’s only job is to provide and maintain the network namespace for the Pod.
+All the other containers inside the Pod join the same network namespace as the pause container.
+Because of this, they share the same:
+Pod IP address
+Network interface
+Localhost network (127.0.0.1)
+Port space
+Most people don’t notice the pause container, but it is responsible for the Pod’s networking.
+It acts like a root container, and all application containers use the network interface created by it.
+So, containers in the same Pod share a single virtual network interface and therefore one IP address.
+
+3. What is Service Mesh and why do we need it?
+
+A Service Mesh is a dedicated infrastructure layer that manages communication between microservices in a Kubernetes or cloud-native environment. It ensures that communication between services is secure, reliable, and observable without requiring changes in application code.
+
+A service mesh provides important features such as service discovery, mutual TLS encryption, traffic management, retries, timeouts, load balancing, observability, logging, tracing, authentication, authorization, and circuit-breaker support.
+
+In microservices environments, where services frequently scale, fail, and change dynamically, a service mesh makes communication consistent, secure, and resilient by using sidecar proxies (e.g., Envoy) to handle networking behavior automatically.
+
+4. what are the init containers why do we need it?
+5. 
