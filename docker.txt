@@ -287,3 +287,42 @@ services:
       db:
         condition: service_healthy
 
+19. How do you safely clean up unused Docker objects in production?
+
+In production, I never delete everything blindly.
+First, I list unused images, containers, volumes, and networks and review them.
+Then I remove only unused and stopped resources using safe prune commands.
+I also schedule periodic cleanup in maintenance windows to avoid impact on running services.
+
+List unused resources first
+docker ps -a
+docker images -a
+docker volume ls
+docker network ls
+
+2. Prune only unused (safe)
+docker container prune
+docker image prune
+docker network prune
+docker volume prune
+
+3. Prune everything unused
+(still safe — doesn’t affect running containers)
+docker system prune
+Add volumes also (extra cautious before running):
+docker system prune --volumes
+
+20. How does overlay networking work in Swarm?
+
+Overlay networking in Swarm allows containers running on different Swarm nodes to communicate securely as if they are on the same network.
+It creates a virtual distributed network over the host machines using VXLAN tunneling.
+docker network create -d overlay mynet
+docker service create --name web --network mynet nginx
+
+| Feature                      | Meaning                             |
+| ---------------------------- | ----------------------------------- |
+| Virtual network across nodes | Cross-host container communication  |
+| Based on VXLAN               | Encapsulates traffic securely       |
+| Service discovery            | Built-in DNS resolves service names |
+| Encrypted networks           | Optional encryption between nodes   |
+| Used for multi-node services | Web ↔ DB across nodes               |
