@@ -218,3 +218,22 @@ Multi-stage builds → smaller runtime image.
 Docker Compose → efficient multi-container builds and orchestration.
 Combine RUN commands + slim base images → faster builds.
 .dockerignore → avoids copying unnecessary files.
+
+15. How do multi-stage builds optimize Docker images?
+
+Multi-stage builds make Docker images smaller and faster.
+We build the application in one stage where all build tools exist, then copy only the required files to a final lightweight image.
+So we don’t carry unnecessary dependencies into the final image, which improves performance, security, and reduces image size.
+
+ex:
+# Build stage
+FROM golang:1.20 AS builder
+WORKDIR /app
+COPY . .
+RUN go build -o app
+
+# Final minimal image
+FROM alpine:latest
+COPY --from=builder /app/app /app
+CMD ["/app"]
+
