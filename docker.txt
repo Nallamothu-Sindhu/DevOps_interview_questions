@@ -344,6 +344,20 @@ docker scout quickview nginx:latest
 # Detailed vulnerability report
 docker scout cves nginx:latest
 
+nginx:latest (debian 11)
+
+Total: 4 (HIGH: 3, CRITICAL: 1)
+
+┌────────────┬───────────┬───────────────┬─────────────────────────────────┐
+│ Package    │ Severity  │ CVE           │ Title                           │
+├────────────┼───────────┼───────────────┼─────────────────────────────────┤
+│ openssl    │ CRITICAL  │ CVE-2023-0286 │ Buffer overflow in X.509        │
+│ libc6      │ HIGH      │ CVE-2022-37454│ Integer overflow                │
+│ curl       │ HIGH      │ CVE-2023-23914│ TLS certificate bypass          │
+│ tar        │ HIGH      │ CVE-2021-20193│ Symlink attack issue            │
+└────────────┴───────────┴───────────────┴─────────────────────────────────┘
+
+
 22. How do you manage secrets in Docker?
 
 Docker Secrets is the feature that is exclusive to Docker Swarm.
