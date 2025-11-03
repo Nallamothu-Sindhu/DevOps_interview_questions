@@ -387,3 +387,15 @@ docker logs <container>
 docker inspect <container> | grep -i restart
 If needed:
 docker exec -it <container> sh
+
+24. How do you implement canary deployments with Docker and Kubernetes?
+
+Canary deployments with Docker and Kubernetes can be implemented by following these steps:
+
+- Set up a Kubernetes cluster and deploy your application using Docker containers.
+- Create a new deployment or service for the updated version of your application (the Canary version).
+- Configure the canary deployment to receive a small percentage of traffic while the majority of traffic is still routed to the stable version.
+- Monitor the canary deployment, collecting metrics and user feedback to assess its stability and performance.
+- If the canary deployment proves successful, gradually increase its traffic allocation.
+- If any issues arise, quickly roll back by reducing the canary's traffic allocation or rolling back the deployment.
+- Repeat the process, gradually increasing the canary's traffic allocation until it becomes the new stable version.
