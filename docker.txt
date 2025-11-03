@@ -237,3 +237,23 @@ FROM alpine:latest
 COPY --from=builder /app/app /app
 CMD ["/app"]
 
+16. A container can’t reach the internet. What do you do?
+
+First, I check container network configuration and test connectivity by pinging an external site.
+Then I verify Docker network settings, DNS configuration, and whether the host machine itself has internet access.
+I also check firewall rules or proxy settings that might block traffic.
+If needed, I restart the Docker service or recreate the container network.
+Step-by-step (you can mention if interviewer asks deeper)
+
+Check internet from container:
+docker exec -it <container> ping google.com
+If DNS issue:
+cat /etc/resolv.conf
+or set Google DNS in Docker config.
+Check host internet & firewall rules
+Restart Docker service:
+sudo systemctl restart docker
+Recreate Docker network if corrupted:
+
+docker network rm bridge
+docker network create bridge
