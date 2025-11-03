@@ -326,3 +326,50 @@ docker service create --name web --network mynet nginx
 | Service discovery            | Built-in DNS resolves service names |
 | Encrypted networks           | Optional encryption between nodes   |
 | Used for multi-node services | Web ↔ DB across nodes               |
+
+21. How do you scan images for vulnerabilities?
+
+I scan Docker images using tools like Trivy and Snyk.
+I run scans locally and also integrate them into CI/CD to block images with high-risk vulnerabilities.
+I regularly update base images and packages to fix CVEs[CVEs are unique IDs]
+
+# Install (Ubuntu/Debian)
+sudo apt install trivy
+# Scan image
+trivy image nginx:latest
+# Show only high + critical issues
+trivy image --severity HIGH,CRITICAL nginx:latest
+
+docker scout quickview nginx:latest
+# Detailed vulnerability report
+docker scout cves nginx:latest
+
+22. How do you manage secrets in Docker?
+
+Docker Secrets is the feature that is exclusive to Docker Swarm.
+It allows secure storage sensitive data (like passwords, tokens, keys) into containers.
+Secrets are encrypted, not stored in images, and not visible in environment variables.
+
+Example (Docker Swarm only)
+echo "mypassword" | docker secret create db_pass -
+docker service create --name myapp --secret db_pass nginx
+Inside container, the secret appears as a secure file:
+/run/secrets/db_pass
+
+23.  A container keeps restarting. What’s the root cause?
+
+A container usually restarts because the main process inside it is crashing or exiting unexpectedly.
+Common causes include:
+
+Application error or crash (unhandled exception, service not starting)
+Wrong configuration or missing environment variables
+Dependency service not ready (DB not reachable)
+Failing health check / liveness probe
+Incorrect entrypoint or command
+Resource issues (low memory → OOMKill)
+To debug, I check:
+docker ps
+docker logs <container>
+docker inspect <container> | grep -i restart
+If needed:
+docker exec -it <container> sh
