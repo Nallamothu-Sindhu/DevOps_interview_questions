@@ -76,7 +76,8 @@ How do you handle persistent storage in Docker?
 
 "By default, data inside a Docker container is ephemeral, meaning it’s lost when the container 
 stops or is removed. To handle persistent storage, I use Docker volumes or bind mounts depending on the use case.
-Volumes: These are Docker-managed and stored under /var/lib/docker/volumes/. They are the best choice for production because they are portable, managed by Docker, and can be easily backed up and shared between containers.
+Volumes: These are Docker-managed and stored under /var/lib/docker/volumes/. They are the best choice for production because they are portable, 
+managed by Docker, and can be easily backed up and shared between containers.
 Example:
 docker run -d --name db -v db_data:/var/lib/mysql mysql:latest
 
