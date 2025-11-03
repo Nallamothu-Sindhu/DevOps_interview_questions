@@ -86,6 +86,15 @@ Bind Mounts: These map a host directory into the container. They are useful for 
 docker run -d -v $(pwd)/app:/usr/src/app myapp
 "In production, I prefer volumes because they are more secure, portable, and independent of the host’s 
 filesystem structure. For backups or migration, I can also use helper containers to copy data in and out of volumes safely."
+cmds:
+docker volume create myvolume
+docker volume ls
+docker volume inspect myvolume
+docker volume rm myvolume
+docker volume rm $(docker volume ls -q)
+
+Container sees data at → /data
+Real data exists on host → /var/lib/docker/volumes/myvolume/_data
 
 7.A company wants to create thousands of Containers. Is there a limit on how many containers you can run in Docker?
 
