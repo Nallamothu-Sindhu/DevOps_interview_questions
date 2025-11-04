@@ -56,4 +56,17 @@ A service mesh provides important features such as service discovery, mutual TLS
 In microservices environments, where services frequently scale, fail, and change dynamically, a service mesh makes communication consistent, secure, and resilient by using sidecar proxies (e.g., Envoy) to handle networking behavior automatically.
 
 4. what are the init containers why do we need it?
-5. 
+5. difference between deployments and statefulsets?
+
+Both Deployments and StatefulSets are used to manage pods, but they are designed for different use cases.
+Deployments:
+Used for stateless applications like web servers or APIs.
+Pods are interchangeable, meaning any pod can replace another.
+Supports rolling updates and rollbacks easily.
+Pod names are random and IPs are dynamic. 
+StatefulSets:
+Used for stateful applications like databases (MySQL, Cassandra) that need persistent storage.
+Pods are unique and ordered; they maintain a stable identity (persistent hostname and storage).
+Supports ordered deployment, scaling, and deletion.
+Each pod gets a stable network identity and persistent volume.
+In short: Use Deployments for stateless apps, and StatefulSets for stateful apps that need stable storage and identity.
