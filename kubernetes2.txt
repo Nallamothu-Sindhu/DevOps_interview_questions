@@ -70,3 +70,112 @@ Pods are unique and ordered; they maintain a stable identity (persistent hostnam
 Supports ordered deployment, scaling, and deletion.
 Each pod gets a stable network identity and persistent volume.
 In short: Use Deployments for stateless apps, and StatefulSets for stateful apps that need stable storage and identity.
+
+6. Services in kubernets?
+
+Before Kubernetes Services, pod IPs kept changing, so apps couldn’t always find each other or share traffic properly.
+In Kubernetes, Services provide a stable network layer to access pods.
+Pods are ephemeral — their IPs change when they restart or scale.
+Services ensure consistent communication between microservices or external users by giving a fixed IP, DNS name, and load-balancing mechanism.
+Why do we use Services?
+| Purpose              | Reason                                            |
+| -------------------- | ------------------------------------------------- |
+| Stable communication | Pods IP changes → Service gives permanent IP/DNS  |
+| Load balancing       | Distributes traffic across multiple pods          |
+| Service discovery    | Other services find your app using DNS            |
+| Expose apps          | Allow internal or external access to applications |
+
+Types of Kubernetes Services with Examples:
+ClusterIP (Default):
+ClusterIP is the default Kubernetes service type that provides a stable internal IP to access pods inside the cluster.
+Since pod IPs change when they restart, ClusterIP ensures reliable internal communication between microservices like frontend → backend → database, and also load-balances traffic across pods.
+ex:
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  type: ClusterIP
+  selector:
+    app: backend
+  ports:
+  - port: 80
+    targetPort: 8080
+
+| Field              | Meaning                                                          |
+| ------------------ | ---------------------------------------------------------------- |
+| `targetPort: 8080` | **Application container port** (where the app runs inside pod)   |
+| `port: 80`         | **ClusterIP service port** (internal stable port other pods use) |
+
+App runs inside the container on 8080
+Service exposes it internally on 80
+Other pods call service like:
+http://backend-service:80
+Service then forwards traffic internally to:
+PodIP:8080
+$ kubectl get svc
+NAME              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+backend-service   ClusterIP   10.96.120.45    <none>        80/TCP    5m
+
+NodePort:
+
+NodePort exposes a service outside the cluster by opening a static port on every node.
+Users can access the application using <NodeIP>:NodePort.
+Internally, NodePort forwards traffic to ClusterIP → Pods.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+spec:
+  type: NodePort
+  selector:
+    app: frontend
+  ports:
+  - port: 80
+    targetPort: 3000
+    nodePort: 32080
+
+| Field              | Meaning                 |
+| ------------------ | ----------------------- |
+| `targetPort: 3000` | App inside pod          |
+| `port: 80`         | ClusterIP internal port |
+| `nodePort: 32080`  | Public access via node  |
+
+http://<Node-IP>:32080
+kubectl get svc
+NAME              TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)           AGE
+frontend-service  NodePort    10.96.170.22   <none>        80:32080/TCP      5m
+
+LoadBalancer
+LoadBalancer exposes a service to the internet using a cloud provider’s load balancer (AWS ELB, Azure LB, GCP LB).
+Good for production external traffic.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: web
+  ports:
+  - port: 80
+    targetPort: 8080
+
+| Field              | Meaning                       | Explanation                                                |
+| ------------------ | ----------------------------- | ---------------------------------------------------------- |
+| `targetPort: 3000` | **Pod/Container port**        | App inside the pod runs on **3000**                        |
+| `port: 80`         | **Service/LoadBalancer port** | Service exposes port **80** to the world & forwards to pod |
+
+
+http://<EXTERNAL-IP>:80
+
+NAME          TYPE           CLUSTER-IP     EXTERNAL-IP     PORT(S)       AGE
+web-service   LoadBalancer   10.96.200.21   34.92.10.50     80:32400/TCP  5m
+
+
+
+
+
+
