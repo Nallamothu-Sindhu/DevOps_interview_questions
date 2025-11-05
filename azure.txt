@@ -1,0 +1,9 @@
+1. Your AKS pods can't pull images from ACR. What do you check?
+
+First, I verify that the AKS managed identity has the AcrPull role on ACR. Then I check ACR’s private endpoint DNS resolution inside AKS. 
+I ensure NSG allows outbound 443 and no firewall blocks. Finally, I test token login and check ACR logs.
+
+2. Application in Azure is slow during peak traffic. What steps you take?
+
+I check Azure Monitor + App Insights (CPU, latency, dependency failures).
+Validate autoscaling, App Gateway latency, Redis cache hit ratio, and SQL DTU. If DB lag, then add read replicas or indexing. If compute bound, scale nodes, enable HPA and CDN caching.
