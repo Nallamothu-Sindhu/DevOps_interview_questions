@@ -1,3 +1,10 @@
 1. give the permission to files
 chmod - file permissions
 chown - owner pee=rmissions
+ps, ps -aux- check the process
+top - view system status [cpu , memory]
+ssh- connect to remote machine
+ssh -i keyname user@ip
+free - memory
+cron job -sechdule tasks, when to run
+
