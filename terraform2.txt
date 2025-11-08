@@ -54,6 +54,55 @@ In our organization, we’re currently using Terraform v1.5.x (or v1.6.x), since
 
 Variables in Terraform are used to make configurations dynamic and reusable.
 Instead of hardcoding values (like instance types or region), you define them as variables and assign values separately.
+Types of Variables
+-- String – Single text value
+variable "region" {
+  type    = string
+  default = "us-east-1"
+}
+-- Number – Numeric value
+variable "instance_count" {
+  type    = number
+  default = 2
+}
+-- Bool – True or false
+variable "enable_monitoring" {
+  type    = bool
+  default = true
+}
+-- List – Ordered list of values
+variable "azs" {
+  type    = list(string)
+  default = ["us-east-1a", "us-east-1b"]
+}
+-- Map – Key-value pairs
+variable "tags" {
+  type = map(string)
+  default = {
+    Environment = "dev"
+    Owner       = "teamA"
+  }
+}
+
+Ways to Pass Variables at Runtime
+You can pass variables in four main ways:
+Using -var option (CLI):
+terraform apply -var="region=us-west-2"
+Using .tfvars file:
+region = "us-west-2"
+instance_count = 3
+Run with:
+terraform apply -var-file="dev.tfvars"
+Using Environment Variables:
+export TF_VAR_region="us-west-2"
+terraform apply
+Using Default Values:
+If a variable has a default, Terraform uses it automatically.
+variable "instance_type" {
+  type    = string
+  default = "t2.small"
+}
+
 
 -> You are managing a complex infrastructure with multiple components, and you need to ensure that Terraform deploys 
 all resources in the correct order?
