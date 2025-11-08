@@ -312,21 +312,46 @@ It ensures that one resource is created or destroyed only after another specific
  even if there’s no direct reference between them.
 
 Example:
-resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
+resource "azurerm_resource_group" "rg" {
+  name     = "my-rg"
+  location = "East US"
 }
 
-resource "aws_subnet" "main" {
-  vpc_id     = aws_vpc.main.id
-  cidr_block = "10.0.1.0/24"
+resource "azurerm_network_security_group" "nsg" {
+  name                = "my-nsg"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
 }
 
-resource "aws_instance" "app" {
-  ami           = var.ami_id
-  instance_type = "t2.micro"
-  subnet_id     = aws_subnet.main.id
-  depends_on    = [aws_vpc.main]
+resource "azurerm_network_interface" "nic" {
+  name                = "my-nic"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = azurerm_subnet.subnet.id
+    private_ip_address_allocation = "Dynamic"
+  }
 }
+
+# 👇 Example of depends_on
+resource "azurerm_linux_virtual_machine" "vm" {
+  name                  = "my-vm"
+  location              = azurerm_resource_group.rg.location
+  resource_group_name   = azurerm_resource_group.rg.name
+  size                  = "Standard_B1s"
+  admin_username        = "azureuser"
+  admin_password        = "P@ssword1234!"
+  network_interface_ids = [azurerm_network_interface.nic.id]
+
+  # 👇 Explicit dependency
+  depends_on = [
+    azurerm_network_security_group.nsg,
+    azurerm_network_interface.nic
+  ]
+}
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> You want to create an instance (AWS EC2 / Azure VM) using Terraform and then execute a shell script on the instance after 
 it has been created. How can you achieve this?
