@@ -639,7 +639,54 @@ Run Plan and Compare
 terraform plan
 terraform apply
 -----------------------------------------------------------------------------------------------------------------------------------------------------
+-> You need to create multiple instances of the same resource with slightly different configurations.
+How can you accomplish this efficiently in Terraform?
 
+In Terraform, I can efficiently create multiple instances of the same resource using meta-arguments like count and for_each.
+If I want to create identical resources, I use count, which repeats the same configuration multiple times.
+But when each resource needs slightly different configurations, I prefer for_each, since it lets me define unique values for each instance using a map or set.
 
+variable "vms" {
+  type = map(any)
+  default = {
+    vm1 = { size = "Standard_B1s", location = "East US" }
+    vm2 = { size = "Standard_B2s", location = "West US" }
+  }
+}
 
+resource "azurerm_linux_virtual_machine" "example" {
+  for_each            = var.vms
+  name                = each.key
+  location            = each.value.location
+  resource_group_name = azurerm_resource_group.rg.name
+  size                = each.value.size
+  admin_username      = "azureuser"
+  admin_password      = "P@ssword1234!"
+  network_interface_ids = []
+}
+
+count
+variable "environments" {
+  default = ["dev", "qa", "prod"]
+}
+
+resource "azurerm_resource_group" "rg" {
+  count    = length(var.environments)
+  name     = "rg-${var.environments[count.index]}"
+  location = "East US"
+}
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+-> What is the difference between count and for_each in Terraform? When do you use them and why?
+
+| Feature / Criteria      | **`count`**                                                          | **`for_each`**                                                        |
+| ----------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| **Purpose**             | Used to create **multiple identical resources**.                     | Used to create **multiple resources with different configurations**.  |
+| **Input Type**          | Accepts a **number** or **list**.                                    | Accepts a **map** or **set**.                                         |
+| **Access Syntax**       | Access elements using **`count.index`**.                             | Access elements using **`each.key`** and **`each.value`**.            |
+| **Best for**            | When all resources are similar and differ only by index or name.     | When each resource has unique attributes (like size, region, etc.).   |
+| **Example Use Case**    | Creating 3 identical subnets or resource groups.                     | Creating multiple VMs with different sizes or locations.              |
+| **Flexibility**         | Less flexible — cannot easily modify or remove specific items.       | More flexible — can target individual items by key.                   |
+| **Resource Addressing** | Changes in the list can cause **resource recreation** (index-based). | Stable addressing — changes don’t affect other resources (key-based). |
+| **Performance Impact**  | Slightly simpler and faster for identical resources.                 | Slightly more complex but better for variable configurations.         |
+| **Syntax Example**      | `count = 3`                                                          | `for_each = var.vms`                                                  |
 
