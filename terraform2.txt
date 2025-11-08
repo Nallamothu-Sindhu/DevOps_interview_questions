@@ -8,6 +8,7 @@ We define the desired infrastructure in .tf files (e.g., VMs, networks, storage)
 Terraform builds a plan by comparing the current state (from the state file + cloud) with the desired state.
 On terraform apply, it executes changes to bring real infrastructure in sync with the code.
 It maintains a state file to track resources and dependencies.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 -> terraform init, plan , apply, destroy?
 
@@ -45,11 +46,11 @@ Example:
 terraform destroy
 Output:
 “Destroy complete! Resources: 2 destroyed.”
-
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -> in your organization which terraform version your using currently?
 
 In our organization, we’re currently using Terraform v1.5.x (or v1.6.x), since it’s stable and compatible with our existing modules and providers. We regularly test new versions in a staging environment before upgrading, to ensure backward compatibility and avoid breaking changes.”
-
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -> what are the variables, types of variables and how do you pass variable in run time in terraform? 
 
 Variables in Terraform are used to make configurations dynamic and reusable.
@@ -102,7 +103,17 @@ variable "instance_type" {
   type    = string
   default = "t2.small"
 }
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-> remote backend in terraform?
 
+A backend in Terraform determines where the state file is stored.
+By default, Terraform uses a local backend (state file stored locally).
+A remote backend stores the state in a centralized location, which is important for team collaboration and security.
+Benefits of Remote Backend
+Collaboration: Multiple team members can work on the same infrastructure safely.
+State Locking: State locking stops multiple updates at once.
+Versioning: Versioning keeps history so you can restore old state files.
+Security: State files can contain sensitive data; remote backends often support encryption.
 
 -> You are managing a complex infrastructure with multiple components, and you need to ensure that Terraform deploys 
 all resources in the correct order?
