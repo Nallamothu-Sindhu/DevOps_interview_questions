@@ -9,7 +9,17 @@ Terraform builds a plan by comparing the current state (from the state file + cl
 On terraform apply, it executes changes to bring real infrastructure in sync with the code.
 It maintains a state file to track resources and dependencies.
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-> what is terraform validate? why its used?
 
+"Terraform validate is a CLI command used to check the syntax and correctness of Terraform code without applying it.
+ It helps catch errors early, ensures variables and resources are properly defined, 
+ and is useful in CI/CD pipelines to prevent invalid configurations from being applied."
+ Terraform validate checks for syntax errors like missing curly braces,
+  undefined variables, 
+  missing required attributes in resources, 
+  wrong module paths, and incorrect expressions. 
+  It ensures the code is structurally correct before planning or applying changes."
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -> terraform init, plan , apply, destroy?
 
 1. terraform init
