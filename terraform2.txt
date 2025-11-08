@@ -115,6 +115,76 @@ State Locking: State locking stops multiple updates at once.
 Versioning: Versioning keeps history so you can restore old state files.
 Security: State files can contain sensitive data; remote backends often support encryption.
 
+For Azure Example
+terraform {
+  backend "azurerm" {
+    resource_group_name  = "rg-terraform"
+    storage_account_name = "terraformstate123"
+    container_name       = "tfstate"
+    key                  = "dev.terraform.tfstate"
+  }
+}
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-> what are the modules, why we are using it and different kinds of modules in terraform?
+
+A module in Terraform is a container for multiple resources that are used together.
+It’s like a reusable block of code — instead of writing the same resource code again and again, you define it once as a module and use it wherever needed.
+Why We Use Modules
+Reusability – Use the same infrastructure code for multiple environments (dev, test, prod).
+Organization – Keep Terraform code clean and modular instead of one big file.
+Consistency – Apply standard infrastructure patterns across teams.
+Scalability – Makes managing large infrastructures easier.
+Types of Modules in Terraform
+| Type                     | Description                                                                                 |
+| ------------------------ | ------------------------------------------------------------------------------------------- |
+| **Root Module**          | The main working directory that contains `.tf` files you run (`terraform apply` on).        |
+| **Child Module**         | Called from within another module or root module using the `module` block.                  |
+| **Public Module**        | Modules available from the **Terraform Registry** (like ready-made AWS VPC or EC2 modules). |
+| **Private/Local Module** | Custom modules stored in your local repo or private registry for internal use.              |
+
+main.tf:
+# Create Resource Group
+module "rg" {
+  source              = "./modules/resource_group"
+  resource_group_name = "app-rg"
+  location            = "East US"
+}
+
+# Create Virtual Network
+module "vnet" {
+  source              = "./modules/vnet"
+  vnet_name           = "app-vnet"
+  address_space       = ["10.0.0.0/16"]
+  location            = module.rg.location
+  resource_group_name = module.rg.name
+}
+
+# Create Virtual Machine
+module "vm" {
+  source              = "./modules/vm"
+  vm_name             = "app-vm"
+  location            = module.rg.location
+  resource_group_name = module.rg.name
+  subnet_id           = module.vnet.subnet_id
+  admin_username      = "azureuser"
+  admin_password      = "Password@123"
+}
+
+modules/resource_group/main.tf:
+
+resource "azurerm_resource_group" "rg" {
+  name     = var.resource_group_name
+  location = var.location
+}
+
+output "name" {
+  value = azurerm_resource_group.rg.name
+}
+
+output "location" {
+  value = azurerm_resource_group.rg.location
+}
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -> You are managing a complex infrastructure with multiple components, and you need to ensure that Terraform deploys 
 all resources in the correct order?
 
@@ -138,7 +208,7 @@ resource "aws_instance" "app" {
   subnet_id     = aws_subnet.main.id
   depends_on    = [aws_vpc.main]
 }
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> You want to create an instance (AWS EC2 / Azure VM) using Terraform and then execute a shell script on the instance after 
 it has been created. How can you achieve this?
 
@@ -175,7 +245,7 @@ local-exec – to run commands locally on the machine where Terraform is execute
     host        = self.public_ip
   }
 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> You have an existing infrastructure on AWS/azure, and you need to use Terraform to manage it. How would you import these 
 resources into your Terraform configuration?
 
