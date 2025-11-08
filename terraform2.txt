@@ -670,23 +670,7 @@ Run Plan and Compare
 terraform plan
 terraform apply
 -----------------------------------------------------------------------------------------------------------------------------------------------------
---> Explain a situation where you might need to use terraform taint and what effect it has on resources?
 
-“We use terraform taint when a resource becomes corrupted or manually changed outside of Terraform — like when someone changes 
-settings in the Azure portal or AWS console.By using terraform taint, we can mark that specific resource for recreation without 
-affecting other resources.
-For example, if someone manually changed the Azure VM size in the portal, I’ll run:
-
-terraform taint azurerm_virtual_machine.appvm
-terraform apply
-
-After tainting, Terraform destroys and recreates only that resource based on the configuration in the code.
-This helps to:
-Prevent configuration drift between Terraform and the actual cloud setup.
-Avoid manual fixes or deleting everything.
-Keep the infrastructure consistent with the Terraform state file.
-In short, terraform taint is used to repair or replace a broken resource safely without impacting the rest of the environment.”
----------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
