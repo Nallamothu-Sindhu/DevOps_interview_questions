@@ -210,6 +210,54 @@ Example:
 terraform import azurerm_resource_group.rg /subscriptions/<id>/resourceGroups/my-rg
 Or restore the state file from your remote backend backup (e.g., S3 versioning, Terraform Cloud).
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-> Can you destroy only one resource in Terraform? If yes, how?
+
+Yes, we can destroy a single specific resource in Terraform using the -target flag with the terraform destroy command.
+For example, if I have a resource like this:
+resource "azurerm_storage_account" "storage" {
+  name                     = "mystorage12345"
+  resource_group_name      = azurerm_resource_group.rg.name
+  location                 = azurerm_resource_group.rg.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+}
+and I only want to delete the storage account — not the resource group —
+I’ll run this command:
+terraform destroy -target=azurerm_storage_account.storage
+This will plan and destroy only that specific resource without affecting others.
+However, I’ll also mention that the -target option should be used carefully — it’s mainly for testing or selective clean-up, not regular use, because it can lead to inconsistent states if dependencies exist.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-> what is lifecycle block in terraform? when we are using it?
+
+The lifecycle block in Terraform is used inside a resource to control how Terraform creates, updates, or destroys that resource.
+resource "azurerm_storage_account" "example" {
+  name                     = "mystorage12345"
+  resource_group_name      = azurerm_resource_group.rg.name
+  location                 = "East US"
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = [tags]
+    create_before_destroy = true
+  }
+}
+
+| Argument                  | Description                                                                                                |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **prevent_destroy**       | Prevents Terraform from accidentally deleting the resource. Helpful for critical resources like databases. |
+| **ignore_changes**        | Ignores specific attribute updates so Terraform doesn’t trigger an unnecessary change.                     |
+| **create_before_destroy** | Creates a new resource first before destroying the old one (helps avoid downtime).                         |
+
+When Do We Use It?
+
+When we want to protect critical resources from deletion (prevent_destroy).
+When changes made outside Terraform should be ignored (ignore_changes).[manually updating tags, sizes etc]
+When we need zero downtime during updates (create_before_destroy).
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 -> You are managing a complex infrastructure with multiple components, and you need to ensure that Terraform deploys 
 all resources in the correct order?
 
