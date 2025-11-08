@@ -267,6 +267,42 @@ When changes made outside Terraform should be ignored (ignore_changes).[manually
 When we need zero downtime during updates (create_before_destroy).
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-> What is taint and untaint in Terraform? When do we use them?
+
+In Terraform, taint and untaint are used to manually mark resources for recreation.
+They help when a resource is not behaving correctly or has gone out of sync with its state, but Terraform itself doesn’t detect any change.
+
+| Command                            | Purpose                                                                                           |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------- |
+| **`terraform taint <resource>`**   | Marks a resource as *tainted*, so Terraform will **destroy and recreate** it in the next `apply`. |
+| **`terraform untaint <resource>`** | Removes the taint mark, meaning Terraform will **not recreate** the resource on the next apply.   |
+
+resource "azurerm_linux_virtual_machine" "example" {
+  name                = "app-server"
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = "East US"
+  size                = "Standard_B1s"
+  admin_username      = "azureuser"
+  admin_password      = "P@ssword1234!"
+}
+Now imagine your VM is running, but some internal configuration is broken (for example, a failed script, or corrupted OS), and you want Terraform to recreate it — even though no code changes were made.
+
+You can mark it tainted manually:
+terraform taint azurerm_linux_virtual_machine.example
+Then run:
+terraform apply
+Terraform will now destroy and recreate that VM — fixing it without you changing the .tf code.
+When to Use taint:
+When a resource is corrupted or not functioning properly in real environment.
+When manual changes made outside Terraform cause inconsistencies.
+When you want to force recreation for troubleshooting or testing.
+When Terraform state shows resource as healthy, but it’s actually broken.
+When to Use untaint:
+If you tainted a resource by mistake, use:
+terraform untaint azurerm_linux_virtual_machine.example
+Now the resource will not be destroyed in the next apply.
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 -> You are managing a complex infrastructure with multiple components, and you need to ensure that Terraform deploys 
 all resources in the correct order?
