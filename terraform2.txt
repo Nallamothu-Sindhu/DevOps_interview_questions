@@ -800,3 +800,34 @@ terraform apply   # applies to prod state
 | Feature or branch testing                     | To safely test new changes without affecting main infra |
 | Managing identical infra in different regions | Each workspace can represent one region                 |
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
+-> What is a dynamic block in Terraform? Why and when do we use it?
+
+In Terraform, a dynamic block is used when you need to repeat a nested block multiple times, but you don’t know how many or what values you’ll have — it comes from a variable.
+
+| Term              | Meaning                                                              |
+| ----------------- | -------------------------------------------------------------------- |
+| **Dynamic Block** | Used to create repeated nested blocks automatically                  |
+| **Why**           | To avoid repeating similar code manually                             |
+| **When**          | When number of items (rules, tags, disks, etc.) depends on variables |
+
+variable "tags" {
+  type = map(string)
+  default = {
+    Environment = "dev"
+    Owner       = "Sindhu"
+    Project     = "TerraformDemo"
+  }
+}
+
+resource "azurerm_resource_group" "example" {
+  name     = "rg-example"
+  location = "eastus"
+
+  dynamic "tags" {
+    for_each = var.tags
+    content {
+      "${tags.key}" = tags.value
+    }
+  }
+}
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
