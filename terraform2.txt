@@ -302,8 +302,6 @@ If you tainted a resource by mistake, use:
 terraform untaint azurerm_linux_virtual_machine.example
 Now the resource will not be destroyed in the next apply.
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
 -> You are managing a complex infrastructure with multiple components, and you need to ensure that Terraform deploys 
 all resources in the correct order?
 
@@ -364,30 +362,78 @@ file – to upload a file from local to the instance.
 remote-exec – to run commands or shell scripts inside the remote instance.
 local-exec – to run commands locally on the machine where Terraform is executed (like triggering Ansible or scripts).
 
-  provisioner "file" {
-    source      = "setup.sh"
-    destination = "/tmp/setup.sh"
+*** Using custom_data (Recommended)
+You can pass your shell script using the custom_data field (it runs on first boot).
+
+resource "azurerm_linux_virtual_machine" "example" {
+  name                  = "my-vm"
+  resource_group_name   = azurerm_resource_group.rg.name
+  location              = azurerm_resource_group.rg.location
+  size                  = "Standard_B1s"
+  admin_username        = "azureuser"
+  admin_password        = "P@ssword1234!"
+  network_interface_ids = [azurerm_network_interface.nic.id]
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
   }
 
-  # Run commands on VM
+  # 👇 Run a shell script on creation
+  custom_data = filebase64("init-script.sh")
+}
+Where init-script.sh contains:
+#!/bin/bash
+sudo apt update -y
+sudo apt install nginx -y
+sudo systemctl start nginx
+
+# remote and local exec
+provider "azurerm" {
+  features {}
+}
+
+resource "azurerm_resource_group" "rg" {
+  name     = "example-rg"
+  location = "East US"
+}
+
+resource "azurerm_linux_virtual_machine" "vm" {
+  name                  = "demo-vm"
+  resource_group_name   = azurerm_resource_group.rg.name
+  location              = azurerm_resource_group.rg.location
+  size                  = "Standard_B1s"
+  admin_username        = "azureuser"
+  admin_password        = "P@ssword1234!"
+  network_interface_ids = []
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  # 👉 Run command inside VM after creation
   provisioner "remote-exec" {
     inline = [
-      "chmod +x /tmp/setup.sh",
-      "sudo /tmp/setup.sh"
+      "sudo apt update -y",
+      "sudo apt install -y nginx",
+      "echo 'Nginx installed successfully' > /tmp/status.txt"
     ]
+
+    connection {
+      type     = "ssh"
+      user     = "azureuser"
+      password = "P@ssword1234!"
+      host     = self.public_ip_address
+    }
   }
 
-  # Run command locally (on Terraform host)
+  # 👉 Run command locally on your Terraform host
   provisioner "local-exec" {
-    command = "echo VM deployed successfully > deploy.log"
+    command = "echo VM ${self.name} created successfully >> output.log"
   }
+}
 
-  connection {
-    type        = "ssh"
-    user        = "ec2-user"
-    private_key = file("~/.ssh/id_rsa")
-    host        = self.public_ip
-  }
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 --> You have an existing infrastructure on AWS/azure, and you need to use Terraform to manage it. How would you import these 
