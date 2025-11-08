@@ -501,38 +501,7 @@ Reusability: Modules can be reused across environments.
 Scalability: Easy to add new clouds later.
 Separation of state: Each provider can have its own backend (e.g., S3 for AWS, Azure Storage for Azure).
 --------------------------------------------------------------------------------------------------------------------------------------------------
--->  You want to run specific scripts after provisioning resources with Terraform. How would you achieve this, and what provisioners might you use?
 
-In Terraform, we use provisioners to run actions or scripts after a resource is created.
-The main provisioners are file, remote-exec, and local-exec.
-file is used to upload files or scripts to a remote instance.
-remote-exec runs commands or shell scripts on the remote instance.
-local-exec runs commands on the local machine where Terraform is executed — for example, triggering a CI/CD script or Ansible playbook.”
- provisioner "file" {
-    source      = "install_nginx.sh"
-    destination = "/tmp/install_nginx.sh"
-  }
-
-  # Execute script on the instance
-  provisioner "remote-exec" {
-    inline = [
-      "chmod +x /tmp/install_nginx.sh",
-      "sudo /tmp/install_nginx.sh"
-    ]
-  }
-
-  # Execute command locally after provisioning
-  provisioner "local-exec" {
-    command = "echo 'Instance created successfully' >> output.log"
-  }
-
-  connection {
-    type        = "ssh"
-    user        = "ec2-user"
-    private_key = file("~/.ssh/id_rsa")
-    host        = self.public_ip
-  }
--------------------------------------------------------------------------------------------------------------------------------------------------
 --> You are dealing with sensitive information, such as API keys, in your Terraform configuration. What approach would you take to manage these securely?
 
 In Terraform, I never hardcode sensitive values like API keys or passwords in the configuration files.
