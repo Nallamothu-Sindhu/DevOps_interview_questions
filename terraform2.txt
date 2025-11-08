@@ -1,3 +1,60 @@
+-> what is terraform and how its work?
+
+Terraform is an Infrastructure as Code (IaC) tool that allows us to provision, configure, and manage infrastructure across multiple 
+ cloud providers like AWS, Azure, GCP, and on-prem.
+
+It works in a declarative way:
+We define the desired infrastructure in .tf files (e.g., VMs, networks, storage).
+Terraform builds a plan by comparing the current state (from the state file + cloud) with the desired state.
+On terraform apply, it executes changes to bring real infrastructure in sync with the code.
+It maintains a state file to track resources and dependencies.
+
+-> terraform init, plan , apply, destroy?
+
+1. terraform init
+Purpose: Initialize a Terraform working directory.
+Downloads required providers (like AWS, Azure, GCP).
+Initializes the backend for storing the state file.
+Must be run once before any other Terraform command.
+Example:
+terraform init
+Output: “Terraform has been successfully initialized!”
+2. terraform plan
+Purpose: Preview the changes Terraform will make.
+Compares your current state with your configuration files (.tf).
+Shows which resources will be created, updated, or destroyed.
+No changes are made yet — it’s only a dry run.
+Example:
+terraform plan
+Output:
+“Plan: 2 to add, 0 to change, 0 to destroy.”
+3. terraform apply
+Purpose: Actually apply the planned changes.
+Executes the actions shown in the plan.
+Creates, modifies, or deletes resources in your cloud provider.
+Asks for confirmation before running (unless you use -auto-approve).
+Example:
+terraform apply
+Output:
+“Apply complete! Resources: 2 added, 0 changed, 0 destroyed.”
+4. terraform destroy
+Purpose: Remove all resources managed by Terraform.
+Destroys all infrastructure defined in your .tf files.
+Useful for cleaning up environments (e.g., dev or test).
+Example:
+terraform destroy
+Output:
+“Destroy complete! Resources: 2 destroyed.”
+
+-> in your organization which terraform version your using currently?
+
+In our organization, we’re currently using Terraform v1.5.x (or v1.6.x), since it’s stable and compatible with our existing modules and providers. We regularly test new versions in a staging environment before upgrading, to ensure backward compatibility and avoid breaking changes.”
+
+-> what are the variables, types of variables and how do you pass variable in run time in terraform? 
+
+Variables in Terraform are used to make configurations dynamic and reusable.
+Instead of hardcoding values (like instance types or region), you define them as variables and assign values separately.
+
 -> You are managing a complex infrastructure with multiple components, and you need to ensure that Terraform deploys 
 all resources in the correct order?
 
