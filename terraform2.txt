@@ -767,4 +767,36 @@ and you need to restrict access to it using a Network Security Group (NSG).How w
 
 “I would create a Network Security Group (NSG) with specific inbound rules — for example, allowing SSH only from my office IP — and then associate that NSG with the VM’s network interface.
 This way, even though the VM has a public IP, its access is restricted and secured by the NSG.”
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-> How do you handle errors in Terraform during plan, apply, or destroy operations?
+I handle Terraform errors through multiple layers —
+I use variable validation to prevent bad input, conditional logic to skip invalid configurations,
+lifecycle rules to protect critical resources, and functions like try() and can() to handle runtime errors gracefully.
+Additionally, I always run terraform plan before apply to catch errors early and use remote state + proper dependencies to avoid race conditions.”
+Input Validation – Validate variable values to prevent invalid inputs before execution.
+Conditional Logic – Use conditions to skip or control resource creation dynamically.
+Lifecycle Rules – Protect critical resources from accidental deletion or modification.
+Plan and Review – Always run terraform plan before apply to catch errors early.
+try() / can() Functions – Gracefully handle runtime errors or missing values.
+depends_on – Ensure correct resource creation order to avoid dependency errors.
+State Management – Use Terraform state commands to fix or recover from failed applies.
 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-> What are workspaces in Terraform? Why and when do you use them?
+
+“In Terraform, workspaces are used to manage multiple environments (like dev, test, and prod) using the same configuration files but with separate state files.”
+Each workspace has its own Terraform state file.
+This allows you to reuse the same code for different environments without overwriting each other’s state.
+For example, one workspace can manage Dev resources, and another can manage Prod — all from the same configuration.
+terraform workspace new dev
+terraform workspace new prod
+terraform workspace select dev
+terraform apply   # applies to dev state
+terraform workspace select prod
+terraform apply   # applies to prod state
+| Use Case                                      | Why Use Workspace                                       |
+| --------------------------------------------- | ------------------------------------------------------- |
+| Multiple environments (dev, test, prod)       | To isolate states within the same codebase              |
+| Feature or branch testing                     | To safely test new changes without affecting main infra |
+| Managing identical infra in different regions | Each workspace can represent one region                 |
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
