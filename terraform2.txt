@@ -762,5 +762,9 @@ resource "random_shuffle" "zone" {
 }
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+-> You have a Terraform configuration that creates a VM with a public IP,
+and you need to restrict access to it using a Network Security Group (NSG).How would you accomplish that in Terraform?
 
+“I would create a Network Security Group (NSG) with specific inbound rules — for example, allowing SSH only from my office IP — and then associate that NSG with the VM’s network interface.
+This way, even though the VM has a public IP, its access is restricted and secured by the NSG.”
 
