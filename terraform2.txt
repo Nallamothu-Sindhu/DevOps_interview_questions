@@ -689,4 +689,78 @@ resource "azurerm_resource_group" "rg" {
 | **Resource Addressing** | Changes in the list can cause **resource recreation** (index-based). | Stable addressing — changes don’t affect other resources (key-based). |
 | **Performance Impact**  | Slightly simpler and faster for identical resources.                 | Slightly more complex but better for variable configurations.         |
 | **Syntax Example**      | `count = 3`                                                          | `for_each = var.vms`                                                  |
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+-> You have a Terraform configuration that creates multiple resources in a specific order, but you need to skip one specific resource in the sequence. How can you accomplish this in Terraform?
+
+In Terraform, we can conditionally skip creating a specific resource using the count or for_each argument combined with a conditional expression.
+Instead of commenting or deleting the resource, we control whether it gets created by setting the count to 0 (which means skip creation).
+
+variable "envs" {
+  default = ["dev", "test", "prod"]
+}
+
+resource "azurerm_resource_group" "example" {
+  count    = length(var.envs)
+  name     = "${var.envs[count.index]}-rg"
+  location = "East US"
+
+  # Skip creating 'test' environment
+  lifecycle {
+    prevent_destroy = false
+  }
+
+  # Conditional creation logic
+  count = var.envs[count.index] == "test" ? 0 : 1
+}
+# for each
+variable "envs" {
+  default = {
+    dev  = true
+    test = false
+    prod = true
+  }
+}
+
+resource "azurerm_resource_group" "example" {
+  for_each = { for k, v in var.envs : k => v if v }
+
+  name     = "${each.key}-rg"
+  location = "East US"
+}
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+-> You want to deploy a Virtual Machine (VM) in a specific availability zone,
+but you are not sure which zone to use.
+How can you dynamically select it at runtime in Terraform?
+
+“In Terraform, I can dynamically select an availability zone at runtime by using data sources like data.azurerm_zones (Azure) or data.aws_availability_zones.
+I can then use functions like element() or resources like random_shuffle to pick one zone automatically.
+This ensures that my deployment is dynamic and doesn’t depend on hardcoded zone values.”
+
+# Fetch available zones dynamically
+data "azurerm_subnet" "example" {
+  name                 = "subnet1"
+  virtual_network_name = "vnet-demo"
+  resource_group_name  = "rg-demo"
+}
+
+# Fetch the available zones from Azure region
+data "azurerm_zones" "available" {
+  location = "East US"
+}
+Step	Description
+data "azurerm_zones"	Fetches the available zones in the given region (East US).
+element()	Picks one element (e.g., first zone) from that list.
+zone = ...	Dynamically assigns that zone to your VM.
+
+data "azurerm_zones" "available" {
+  location = "East US"
+}
+
+resource "random_shuffle" "zone" {
+  input        = data.azurerm_zones.available.names
+  result_count = 1
+}
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
